@@ -1,0 +1,6 @@
+/Debug/
+/Release/
+*.launch
+.settings/
+.mxproject
+*.ioc_bak
