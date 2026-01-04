@@ -4,3 +4,4 @@
 .settings/
 .mxproject
 *.ioc_bak
+.DS_Store
