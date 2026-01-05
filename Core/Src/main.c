@@ -23,6 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include <math.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,6 +34,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define BUFFER_SIZE 512
 
 /* USER CODE END PD */
 
@@ -52,6 +55,24 @@ DMA_HandleTypeDef hdma_sdio_tx;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+const float TAU = 6.283185307f;
+int16_t adcData[BUFFER_SIZE];
+int16_t dacData[BUFFER_SIZE];
+
+
+
+// --- SWEEP-GENERAATTORIN MUUTTUJAT ---
+float current_phase = 0.0f;
+float current_freq = 20.0f;
+
+//
+const float SAMPLE_RATE = 48000.0f;
+const float START_FREQ = 20.0f;
+const float END_FREQ = 20000.0f;
+const float DURATION = 5.0f;
+
+// uint8_t dataReadyFlag; EI TARPEELLINEN TÄSSÄ VERSIOSSA
+
 
 /* USER CODE END PV */
 
@@ -68,6 +89,60 @@ static void MX_SDIO_SD_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+
+// --- SWEEP GENERATOR (ORIGINAL SIMPLE VERSION) ---
+
+// Function to calculate and fill the buffer with sine sweep data
+void Fill_Sweep_Buffer(int16_t *buffer, int length) {
+    // 1. Calculate frequency increment per sample (Hz per sample)
+    float freq_step = (END_FREQ - START_FREQ) / (DURATION * SAMPLE_RATE);
+
+    // 2. Loop through the buffer (i += 2 for Stereo: Left and Right)
+    for (int i = 0; i < length; i += 2) {
+
+        // --- A. Calculate Sine ---
+        float sample = sinf(current_phase);
+
+        // Scale to 16-bit (10000.0f is loud and clear for testing)
+        int16_t value = (int16_t)(sample * 10000.0f);
+
+        // --- B. Store in Buffer ---
+        buffer[i]     = value; // Left Channel
+        buffer[i + 1] = value; // Right Channel
+
+        // --- C. Update Phase ---
+        // Formula: 2*PI * Frequency / SampleRate
+        float phase_increment = (TAU * current_freq) / SAMPLE_RATE;
+        current_phase += phase_increment;
+
+        // Keep phase within range 0 ... 2*PI
+        if (current_phase > TAU) {
+            current_phase -= TAU;
+        }
+
+        // --- D. Update Frequency (Sweep) ---
+        current_freq += freq_step;
+
+        // If sweep is finished (freq > max), reset to start frequency
+        if (current_freq > END_FREQ) {
+            current_freq = START_FREQ;
+        }
+    }
+}
+
+// --- CALLBACK FUNCTIONS ---
+
+// 1. Half Transfer: DMA has played the first half -> We refill it
+void HAL_I2SEx_TxRxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
+    Fill_Sweep_Buffer(&dacData[0], BUFFER_SIZE / 2);
+}
+
+// 2. Transfer Complete: DMA has played the second half -> We refill it
+void HAL_I2SEx_TxRxCpltCallback(I2S_HandleTypeDef *hi2s){
+    Fill_Sweep_Buffer(&dacData[BUFFER_SIZE / 2], BUFFER_SIZE / 2);
+}
+
 
 /* USER CODE END 0 */
 
@@ -106,7 +181,13 @@ int main(void)
   MX_SDIO_SD_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-
+Fill_Sweep_Buffer(&dacData[0], BUFFER_SIZE);
+//Hal_StatusTypeDef status = HAL_I2SEx_TransmitReceive_DMA(&hi2s2, (uint16_t *) dacData, (uint16_t *) adcData, BUFFER_SIZE);
+if (HAL_I2SEx_TransmitReceive_DMA(&hi2s2, (uint16_t *)dacData, (uint16_t *)adcData, BUFFER_SIZE) != HAL_OK)
+  {
+      // Jos käynnistys epäonnistuu, mene Error_Handleriin
+      Error_Handler();
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -116,6 +197,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+	  HAL_Delay(500); // wait 500ms
   }
   /* USER CODE END 3 */
 }
