@@ -294,7 +294,6 @@ __weak uint8_t BSP_SD_IsDetected(void)
 {
   __IO uint8_t status = SD_PRESENT;
 
-  /* Checks if card is connected (pin PB0)*/
   if (BSP_PlatformIsDetected() == 0x0)
   {
     status = SD_NOT_PRESENT;
@@ -302,6 +301,7 @@ __weak uint8_t BSP_SD_IsDetected(void)
 
   return status;
 }
+
 /* USER CODE BEGIN AdditionalCode */
 /* user code can be inserted here */
 /* USER CODE END AdditionalCode */
