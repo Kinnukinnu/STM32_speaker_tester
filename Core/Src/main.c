@@ -22,7 +22,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stdio.h"
+#include "sd_card.h"
 #include <math.h>
 
 /* USER CODE END Includes */
@@ -90,8 +91,6 @@ static void MX_SDIO_SD_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-
-// --- SWEEP GENERATOR (ORIGINAL SIMPLE VERSION) ---
 
 // Function to calculate and fill the buffer with sine sweep data
 void Fill_Sweep_Buffer(int16_t *buffer, int length) {
@@ -181,16 +180,28 @@ int main(void)
   MX_SDIO_SD_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-Fill_Sweep_Buffer(&dacData[0], BUFFER_SIZE);
-//Hal_StatusTypeDef status = HAL_I2SEx_TransmitReceive_DMA(&hi2s2, (uint16_t *) dacData, (uint16_t *) adcData, BUFFER_SIZE);
-if (HAL_I2SEx_TransmitReceive_DMA(&hi2s2, (uint16_t *)dacData, (uint16_t *)adcData, BUFFER_SIZE) != HAL_OK)
-  {
-      // Jos käynnistys epäonnistuu, mene Error_Handleriin
-      Error_Handler();
-  }
-  /* USER CODE END 2 */
 
-  /* Infinite loop */
+//  Try to detect SD card
+  if (sd_card_init() != 0) {
+  	  while(1){
+	  		  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+	  		  HAL_Delay(100);
+	  	  }
+
+  }
+
+  HAL_Delay(500);
+
+  Fill_Sweep_Buffer(&dacData[0], BUFFER_SIZE);
+  //Hal_StatusTypeDef status = HAL_I2SEx_TransmitReceive_DMA(&hi2s2, (uint16_t *) dacData, (uint16_t *) adcData, BUFFER_SIZE);
+  if (HAL_I2SEx_TransmitReceive_DMA(&hi2s2, (uint16_t *)dacData, (uint16_t *)adcData, BUFFER_SIZE) != HAL_OK)
+    {
+        // Jos käynnistys epäonnistuu, mene Error_Handleriin
+        Error_Handler();
+    }
+    /* USER CODE END 2 */
+
+    /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
