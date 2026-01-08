@@ -25,6 +25,7 @@
 #include "stdio.h"
 #include "sd_card.h"
 #include <math.h>
+#include <stdint.h>
 
 /* USER CODE END Includes */
 
@@ -35,7 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 4096
 
 /* USER CODE END PD */
 
@@ -56,9 +57,13 @@ DMA_HandleTypeDef hdma_sdio_tx;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+
 const float TAU = 6.283185307f;
 int16_t adcData[BUFFER_SIZE];
 int16_t dacData[BUFFER_SIZE];
+volatile uint8_t button_flag, start_stop_recording;
+volatile uint8_t half_i2s, full_i2s;
+volatile int debug_number;
 
 
 
@@ -135,11 +140,14 @@ void Fill_Sweep_Buffer(int16_t *buffer, int length) {
 // 1. Half Transfer: DMA has played the first half -> We refill it
 void HAL_I2SEx_TxRxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
     Fill_Sweep_Buffer(&dacData[0], BUFFER_SIZE / 2);
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    half_i2s = 1;
 }
 
 // 2. Transfer Complete: DMA has played the second half -> We refill it
 void HAL_I2SEx_TxRxCpltCallback(I2S_HandleTypeDef *hi2s){
     Fill_Sweep_Buffer(&dacData[BUFFER_SIZE / 2], BUFFER_SIZE / 2);
+    full_i2s = 1;
 }
 
 
@@ -190,28 +198,71 @@ int main(void)
 
   }
 
-  HAL_Delay(500);
 
-  Fill_Sweep_Buffer(&dacData[0], BUFFER_SIZE);
-  //Hal_StatusTypeDef status = HAL_I2SEx_TransmitReceive_DMA(&hi2s2, (uint16_t *) dacData, (uint16_t *) adcData, BUFFER_SIZE);
-  if (HAL_I2SEx_TransmitReceive_DMA(&hi2s2, (uint16_t *)dacData, (uint16_t *)adcData, BUFFER_SIZE) != HAL_OK)
-    {
-        // Jos käynnistys epäonnistuu, mene Error_Handleriin
-        Error_Handler();
-    }
-    /* USER CODE END 2 */
 
-    /* Infinite loop */
+
+
+
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+
+
+	  if(button_flag)
+	  {
+		  if(start_stop_recording)
+		  {
+
+			  start_stop_recording = 0;
+		  	  stop_recording();
+		  	  debug_number = 1;
+		  	  HAL_I2S_DMAStop(&hi2s2);
+		  }
+
+	  	  else
+	  	  {
+	  		  start_stop_recording = 1;
+	  		  start_recording(I2S_AUDIOFREQ_48K);
+	  		  debug_number = 2;
+	  		  Fill_Sweep_Buffer(&dacData[0], BUFFER_SIZE);
+	  		  //Hal_StatusTypeDef status = HAL_I2SEx_TransmitReceive_DMA(&hi2s2, (uint16_t *) dacData, (uint16_t *) adcData, BUFFER_SIZE);
+	  		  if (HAL_I2SEx_TransmitReceive_DMA(&hi2s2, (uint16_t *)dacData, (uint16_t *)adcData, BUFFER_SIZE) != HAL_OK)
+	  		    {
+	  		        // Jos käynnistys epäonnistuu, mene Error_Handleriin
+	  		        Error_Handler();
+	  		    }
+
+
+	  	  }
+
+	  	  button_flag = 0;
+	  }
+
+	  if(start_stop_recording == 1 && half_i2s ==1)
+	  {
+		  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+		  write2wave_file((uint8_t *)&adcData[0], (BUFFER_SIZE/2) * 2);
+		  half_i2s = 0;
+	  }
+	  if(start_stop_recording == 1 && full_i2s == 1)
+	  {
+		  write2wave_file((uint8_t *)&adcData[BUFFER_SIZE/2], (BUFFER_SIZE/2) * 2);
+		  full_i2s = 0;
+	  }
+
+
+
+  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 
-	  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-	  HAL_Delay(500); // wait 500ms
-  }
+
+
   /* USER CODE END 3 */
 }
 
@@ -316,7 +367,7 @@ static void MX_SDIO_SD_Init(void)
   hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
   hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 10;
+  hsd.Init.ClockDiv = 4;
   /* USER CODE BEGIN SDIO_Init 2 */
 
   /* USER CODE END SDIO_Init 2 */
@@ -423,12 +474,35 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(CARD_DETECT_GPIO_Port, &GPIO_InitStruct);
 
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+
+//void HAL_I2S_RxHalfCpltCallback(I2S_HandleTypeDef *hi2s)
+//{
+//	half_i2s = 1;
+//}
+//
+//void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s)
+//{
+//	full_i2s = 1;
+//}
+
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if(GPIO_Pin == B1_Pin){
+		button_flag = 1;
+	}
+}
+
 
 /* USER CODE END 4 */
 
