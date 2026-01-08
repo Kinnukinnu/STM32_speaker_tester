@@ -198,7 +198,29 @@ int main(void)
 
   }
 
+  /* TESTI 1: Yksinkertainen kirjoitustesti */
+  FIL testiFile;
+  FRESULT res;
+  UINT bytesWritten;
+  char testiData[] = "Tämä on testi. Toimiiko SD-kortti?\n";
 
+  printf("Testi 1: Yritetaan kirjoittaa tekstitiedostoa...\n");
+
+  res = f_open(&testiFile, "testi.txt", FA_WRITE | FA_CREATE_ALWAYS);
+  if(res == FR_OK) {
+      f_write(&testiFile, testiData, sizeof(testiData), &bytesWritten);
+      f_close(&testiFile);
+      printf("Testi 1: ONNISTUI! Tiedosto kirjoitettu.\n");
+      // Sytytä LED merkiksi onnistumisesta
+      HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+  } else {
+      printf("Testi 1: EPAONNISTUI. Virhekoodi: %d\n", res);
+      // Vilkuta LEDiä virheen merkiksi
+      while(1) {
+          HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+          HAL_Delay(100);
+      }
+  }
 
 
 
