@@ -137,14 +137,13 @@ void Fill_Sweep_Buffer(int16_t *buffer, int length) {
 
 // --- CALLBACK FUNCTIONS ---
 
-// 1. Half Transfer: DMA has played the first half -> We refill it
+// 1. Half Transfer: DMA has played the first half -> refill
 void HAL_I2SEx_TxRxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
     Fill_Sweep_Buffer(&dacData[0], BUFFER_SIZE / 2);
-    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
     half_i2s = 1;
 }
 
-// 2. Transfer Complete: DMA has played the second half -> We refill it
+// 2. Transfer Complete: DMA has played the second half -> refill
 void HAL_I2SEx_TxRxCpltCallback(I2S_HandleTypeDef *hi2s){
     Fill_Sweep_Buffer(&dacData[BUFFER_SIZE / 2], BUFFER_SIZE / 2);
     full_i2s = 1;
