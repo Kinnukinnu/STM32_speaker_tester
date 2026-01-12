@@ -6,7 +6,7 @@ After analysing the recorded file, a corrective EQ curve will be provided. In-de
 #### Hardware
 | Component name | Description |
 |----------|-----------|
-|STM32 NUCLEO-F411RE| MCU|
+|STM32 NUCLEO-F411RE| STM32F411RET6|
 |Pmod I2S2 | CS5343 ADC, CS4344 DAC   |
 |Pololu-2597 | SD Card breakout board      |
 |Wires and Cables| Connections, USB, Audio      |
