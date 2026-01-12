@@ -188,7 +188,7 @@ int main(void)
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
-//  Try to detect SD card
+//  Try to detect SD card, if not detected blink the led
   if (sd_card_init() != 0) {
   	  while(1){
 	  		  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
@@ -197,33 +197,6 @@ int main(void)
 
   }
 
-  /* TESTI 1: Yksinkertainen kirjoitustesti */
-  FIL testiFile;
-  FRESULT res;
-  UINT bytesWritten;
-  char testiData[] = "Tämä on testi. Toimiiko SD-kortti?\n";
-
-  printf("Testi 1: Yritetaan kirjoittaa tekstitiedostoa...\n");
-
-  res = f_open(&testiFile, "testi.txt", FA_WRITE | FA_CREATE_ALWAYS);
-  if(res == FR_OK) {
-      f_write(&testiFile, testiData, sizeof(testiData), &bytesWritten);
-      f_close(&testiFile);
-      printf("Testi 1: ONNISTUI! Tiedosto kirjoitettu.\n");
-      // Sytytä LED merkiksi onnistumisesta
-      HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-  } else {
-      printf("Testi 1: EPAONNISTUI. Virhekoodi: %d\n", res);
-      // Vilkuta LEDiä virheen merkiksi
-      while(1) {
-          HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-          HAL_Delay(100);
-      }
-  }
-
-
-
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -231,15 +204,13 @@ int main(void)
   while (1)
   {
 
-
-
 	  if(button_flag)
 	  {
 		  if(start_stop_recording)
 		  {
-
 			  start_stop_recording = 0;
 		  	  stop_recording();
+		  	  //a variable to check
 		  	  debug_number = 1;
 		  	  HAL_I2S_DMAStop(&hi2s2);
 		  }
@@ -253,7 +224,7 @@ int main(void)
 	  		  //Hal_StatusTypeDef status = HAL_I2SEx_TransmitReceive_DMA(&hi2s2, (uint16_t *) dacData, (uint16_t *) adcData, BUFFER_SIZE);
 	  		  if (HAL_I2SEx_TransmitReceive_DMA(&hi2s2, (uint16_t *)dacData, (uint16_t *)adcData, BUFFER_SIZE) != HAL_OK)
 	  		    {
-	  		        // Jos käynnistys epäonnistuu, mene Error_Handleriin
+
 	  		        Error_Handler();
 	  		    }
 
