@@ -1,7 +1,7 @@
 ## Speaker calibration device
 
 This is a work in progress embedded project to create a speaker calibration tool and an analyzer. The MCU creates a sinewave sweep that is recorded simultaneously (with and external mic) to an SD card as a WAVE file. 
-After analysing the recorded file, a corrective EQ curve will be provided. In-depth explanation in the documents folder.
+After analysing the recorded room impulse response, a corrective EQ curve will be provided. In-depth explanation in the documents folder.
 
 #### Hardware
 | Component name | Description |
