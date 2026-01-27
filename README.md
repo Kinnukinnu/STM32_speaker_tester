@@ -62,3 +62,4 @@ The test signal is generated **procedurally in real-time** via code, rather than
 - I'm researching if it is possible to do the frequency analysis with the MCU (CMSIS library) or do I need external software for PC
 - FFT implementation (initial testing in matlab/octave)
 - In depth documentation
+- Credits
