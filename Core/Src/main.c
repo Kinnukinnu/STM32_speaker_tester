@@ -77,7 +77,7 @@ const float START_FREQ = 20.0f;
 const float END_FREQ = 20000.0f;
 const float DURATION = 5.0f;
 
-// uint8_t dataReadyFlag; EI TARPEELLINEN TÄSSÄ VERSIOSSA
+
 
 
 /* USER CODE END PV */
