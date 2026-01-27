@@ -32,6 +32,9 @@ Since the STM32F411 acts as the **Controller (master)** and the Pmod I2S2 as the
 | **SD** | Serial Data (SDIN, SDOUT) | Pulse-code modulation data |
 | **MCK** | Master Clock | $256 \times 48 \text{kHz} = \mathbf{12.288 \text{ MHz}}$ |
 
+![I2S Timing Diagram](images/i2s.png)
+*Figure 1: I2S Timing protocol (Source: Wikipedia)*
+
 ### 2. DMA & Double Buffering
 To ensure real-time audio performance without blocking the CPU, **Direct Memory Access (DMA)** is utilized. This allows the I2S peripheral to store and collect data directly from RAM, leaving the CPU free to handle signal generation and file writing.
 
