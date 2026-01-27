@@ -18,7 +18,7 @@ After analysing the recorded room impulse response, a corrective EQ curve will b
 
 ## Key Features
 
-**1. Full-duplex I2S audio streaming**
+### 1. Full-duplex I2S audio streaming
 
 I2S (Inter-IC Sound) is configured in **Full-Duplex Master Mode**, enabling simultaneous transmission and reception.
 
