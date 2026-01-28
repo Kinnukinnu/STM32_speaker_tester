@@ -50,7 +50,7 @@ This ensures a continuous data stream.
 ### 3. Test Signal Generation
 The test signal is generated **procedurally in real-time** via code, rather than playing back a file from the SD card.
 
-* **Mechanism:** The MCU calculates a **linear sine sweep from 20 Hz to 20 kHz.
+* **Mechanism:** The MCU calculates a linear sine sweep from 20 Hz to 20 kHz.
 * **Hardware Acceleration:** The implementation utilizes the STM32F4's **Floating Point Unit (FPU)** to calculate the sine wave samples efficiently using the standard `sinf()` function.
 
 
