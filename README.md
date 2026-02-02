@@ -64,8 +64,21 @@ The test signal is generated **procedurally in real-time** via code, rather than
     * **Loopback Test:** Connecting DAC directly to ADC results in clean audio.
     * **External Interface:** Connecting an external preamp introduces a high noise floor. Currently investigating potential **ground loops**
 - [ ] **File System Logic:** Improve FATFS implementation to handle existing files on the SD card (e.g., implement dynamic file naming `rec_001.wav`, `rec_002.wav` to avoid overwrite errors).
+
+### Credits
+
+These sources helped me immensely, and I want to express my gratitude to:
+
+#### I2S, DMA, Double buffering
+* [Pmod I2S2 reference manual](https://digilent.com/reference/pmod/pmodi2s2/reference-manual)
+* [Phil's Lab - STM32 I2S Audio Setup](https://www.youtube.com/watch?v=zlGSxZGwj-E)
+* [YetAnotherElectronicsChannel - DMA & Audio Buffering](https://www.youtube.com/watch?v=lNBrGOk0XzE)
+
+#### SDIO, FATFS
+* [DeepBlueEmbedded - STM32 SDIO & FatFs Tutorial](https://deepbluembedded.com/stm32-sdio-sd-card-example-fatfs-tutorial/)
+* [Steppe School - SD Card Interfacing with STM32](https://www.youtube.com/watch?v=v9Otedngh24)
+
 #### Roadmap  
 - I'm researching if it is possible to do the frequency analysis with the MCU (CMSIS library) or do I need external software for PC
 - FFT implementation (initial testing in matlab/octave)
 - In depth documentation
-- Credits
