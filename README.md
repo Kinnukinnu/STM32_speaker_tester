@@ -19,6 +19,14 @@ https://www.youtube.com/watch?v=aHnPGv5U_bM
 - IDE: STM32cubeMX, STM32cubeIDE
 - C language (HAL libraries)
 
+#### System overview 
+<p align="left">
+  <img src="images/block_diagram.png" alt="System Block Diagram" width="800">
+  <br>
+  <em>Figure 1: System Block Diagram: Hardware architecture and data flow.</em>
+</p>
+
+
 ## Key Features
 
 ### 1. Full-duplex I2S audio streaming
@@ -36,7 +44,7 @@ Since the STM32F411 acts as the **Controller (master)** and the Pmod I2S2 as the
 | **MCK** | Master Clock | $256 \times 48 \text{kHz} = \mathbf{12.288 \text{ MHz}}$ |
 
 ![I2S Timing Diagram](images/i2s.png)
-*Figure 1: I2S Timing protocol (Source: Wikipedia)*
+*Figure 2: I2S Timing protocol (Source: Wikipedia)*
 
 ### 2. DMA & Double Buffering
 To ensure real-time audio performance without blocking the CPU, **Direct Memory Access (DMA)** is utilized. This allows the I2S peripheral to store and collect data directly from RAM, leaving the CPU free to handle signal generation and file writing.
